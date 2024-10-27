@@ -1,0 +1,58 @@
+services:
+  reverse-proxy:
+    container_name: trill-reverse-proxy
+    image: traefik:v3.1
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080" # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    container_name: trill-frontend
+    build:
+      context: ./frontend
+      dockerfile: ../.docker/frontend/Dockerfile.prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`trill.localhost`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    restart: always
+    tty: true
+    stdin_open: true
+
+  backend:
+    container_name: trill-backend
+    build:
+      context: ./backend
+      dockerfile: ../.docker/backend/Dockerfile.prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.trill.localhost`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=1323"
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./backend:/go/src
+    depends_on:
+      - db
+
+  db:
+    container_name: trill-db
+    build:
+      context: .
+      dockerfile: ./.docker/db/Dockerfile
+    environment:
+      - MYSQL_ROOT_PASSWORD=db
+      - MYSQL_DATABASE=db
+      - MYSQL_USER=db
+      - MYSQL_PASSWORD=db
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

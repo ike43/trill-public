@@ -1,0 +1,88 @@
+name: Backend CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'backend/app/**'
+
+env:
+  GO_VERSION: 1.22
+  WORKING_DIRECTORY: backend/app
+
+jobs:
+  tidy:
+    name: Tidy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Run go mod tidy
+        run: |
+          cd ${{ env.WORKING_DIRECTORY }}
+          go mod tidy
+      - name: Check for changes in go.mod or go.sum
+        run: |
+          cd ${{ env.WORKING_DIRECTORY }}
+          go mod tidy
+          changes=$(git diff go.mod go.sum)
+          if [ -n "$changes" ]; then
+            echo "go.mod or go.sum has been modified. Please run 'go mod tidy' and commit the changes."
+            exit 1
+          else
+            echo "No changes detected in go.mod or go.sum."
+          fi
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Run gofmt
+        run: |
+          files=$(gofmt -l ${{ env.WORKING_DIRECTORY }})
+          if [ -n "$files" ]; then
+            echo "The following files are not formatted:"
+            echo "$files"
+            exit 1
+          else
+            echo "All files are properly formatted."
+          fi
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Install dependencies
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+      - name: Run goimports
+        run: |
+          files=$(goimports -l ${{ env.WORKING_DIRECTORY }})
+          if [ -n "$files" ]; then
+            echo "The following files have import issues:"
+            echo "$files"
+            exit 1
+          else
+            echo "All files have correct imports."
+          fi
+      - name: Run Staticcheck
+        run: |
+          cd ${{ env.WORKING_DIRECTORY }}
+          staticcheck ./...

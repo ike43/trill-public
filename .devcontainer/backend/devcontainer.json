@@ -1,0 +1,21 @@
+{
+  "name": "Trill Backend",
+  "dockerComposeFile": "../../docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/go/src",
+  "remoteUser": "root",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "[go]": {
+          "editor.defaultFormatter": "golang.go",
+          "editor.formatOnSave": true
+        },
+        "go.formatTool": "gofmt",
+        "go.inferGopath": true,
+        "terminal.integrated.shell.linux": "/bin/bash"
+      },
+      "extensions": ["golang.go", "editorconfig.editorconfig"]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "Trill Frontend",
+  "dockerComposeFile": "../../docker-compose.yml",
+  "service": "frontend",
+  "workspaceFolder": "/app",
+  "remoteUser": "root",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "[typescript][typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "terminal.integrated.shell.linux": "/bin/bash"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig"
+      ]
+    }
+  }
+}

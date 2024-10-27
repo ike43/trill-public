@@ -1,0 +1,18 @@
+services:
+  frontend:
+    build:
+      dockerfile: ../.docker/frontend/Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - next:/app/.next
+      - node_modules:/app/node_modules
+
+  backend:
+    build:
+      dockerfile: ../.docker/backend/Dockerfile.dev
+    environment:
+      SEEDING: ${SEEDING:-false}
+
+volumes:
+  next:
+  node_modules:
